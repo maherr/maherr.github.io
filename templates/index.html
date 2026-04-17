@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="post-list">
+  {% if section.pages %}
+  <ul>
+    {% for page in section.pages %}
+    <li>
+      <a href="{{ page.permalink | safe }}">{{ page.title }}</a>
+      <time datetime="{{ page.date }}">{{ page.date | date(format="%Y-%m-%d") }}</time>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p><em>Nothing published yet.</em></p>
+  {% endif %}
+</section>
+{% endblock %}

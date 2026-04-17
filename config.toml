@@ -1,0 +1,17 @@
+base_url = "https://maherr.dev"
+title = "maherr"
+description = "Engineering notes"
+author = "maherr"
+default_language = "en"
+compile_sass = true
+build_search_index = false
+generate_feeds = true
+feed_filenames = ["atom.xml"]
+
+[markdown]
+smart_punctuation = false
+bottom_footnotes = true
+
+[extra]
+author = "maherr"
+github = "https://github.com/maherr"

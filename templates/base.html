@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ config.title }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ config.description }}{% endblock %}">
+  <link rel="stylesheet" href="{{ get_url(path='style.css', cachebust=true) | safe }}">
+  <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml', trailing_slash=false) | safe }}">
+</head>
+<body>
+  <header class="site-header">
+    <nav>
+      <a href="{{ config.base_url | safe }}" class="site-title">{{ config.title }}</a>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    <p>Written by <a href="{{ config.extra.github }}">{{ config.extra.author }}</a>. <a href="{{ get_url(path='atom.xml', trailing_slash=false) | safe }}">RSS</a>.</p>
+  </footer>
+</body>
+</html>

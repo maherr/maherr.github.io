@@ -1,0 +1,10 @@
+# Zola build output
+/public/
+
+# Editor cruft
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+.vscode/
