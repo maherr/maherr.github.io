@@ -1,7 +1,7 @@
 +++
 title = "Witness: frontier speaker diarization, first open-source on $550 AMD RDNA 4, 10.65% DER, 15× realtime (beats pyannote)"
 date = 2026-04-17
-description = "Best published open-source DER on VoxConverse under every scoring convention on both splits, running on a consumer AMD RX 9070 via 8 patches that unlock ONNX Runtime + MIGraphX on RDNA 4. 15× realtime."
+description = "6.84% / 10.65% strict DER on VoxConverse DEV / TEST at 15× realtime, running on a $550 AMD RX 9070 via 8 patches that unlock ONNX Runtime + MIGraphX on RDNA 4."
 +++
 
 I wanted speaker diarization on my AMD GPU. The production pipelines said "CUDA required." A few weeks later, mine doesn't. The result is **Witness**: sub-7% strict DER on VoxConverse DEV (6.84%), 10.65% on TEST, 15x realtime. On a $550 consumer AMD card that officially isn't supported by anything.
