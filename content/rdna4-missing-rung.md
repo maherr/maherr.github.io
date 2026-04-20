@@ -4,6 +4,8 @@ date = 2026-04-17
 description = "6.84% / 10.65% strict DER on VoxConverse DEV / TEST at 15× realtime, running on a $550 AMD RX 9070 via 8 patches that unlock ONNX Runtime + MIGraphX on RDNA 4."
 +++
 
+> **Update, 2026-04-20.** After this post shipped, @pfultz2 at AMD looked at my open issue on patch 5 (the `no_device.cpp` `#error`) and pointed out that MIGraphX expects `clang++` as `CMAKE_CXX_COMPILER`, not hipcc. My build was falling back to `/usr/bin/hipcc` (Fedora's default when the `hipcc` package is installed), which injects `-x hip` onto every TU including host-only ones. That's why the `#error` tripped. Rebuilding with `-DCMAKE_CXX_COMPILER=/usr/lib64/rocm/llvm/bin/clang++` and the original `#error` restored, the full MIGraphX build completes cleanly. Patch 5 was a user-side build-config error, not a MIGraphX bug. The canonical set is now 7 patches. Details and compile-commands evidence on [ROCm/AMDMIGraphX#4799](https://github.com/ROCm/AMDMIGraphX/issues/4799) (closed). The body of the post below still uses the "8 patches" framing because that's the journey it describes.
+
 I wanted speaker diarization on my AMD GPU. The production pipelines said "CUDA required." A few weeks later, mine doesn't. The result is **Witness**: sub-7% strict DER on VoxConverse DEV (6.84%), 10.65% on TEST, 15x realtime. On a $550 consumer AMD card that officially isn't supported by anything.
 
 ---
