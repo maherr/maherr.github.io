@@ -1,19 +1,19 @@
 +++
-title = "Witness: frontier speaker diarization, first open-source on $550 AMD RDNA 4, 10.65% DER, 15× realtime (beats pyannote)"
+title = "Witness: frontier speaker diarization, first open-source on $550 AMD RDNA 4, 10.76% DER, 20× realtime (beats pyannote)"
 date = 2026-04-17
-description = "6.84% / 10.65% strict DER on VoxConverse DEV / TEST at 15× realtime, running on a $550 AMD RX 9070 via 8 patches that unlock ONNX Runtime + MIGraphX on RDNA 4."
+description = "6.84% / 10.76% strict DER on VoxConverse DEV / TEST at 20× realtime, running on a $550 AMD RX 9070 via 8 patches that unlock ONNX Runtime + MIGraphX on RDNA 4."
 +++
 
 > **Update, 2026-04-20.** After this post shipped, @pfultz2 at AMD looked at my open issue on patch 5 (the `no_device.cpp` `#error`) and pointed out that MIGraphX expects `clang++` as `CMAKE_CXX_COMPILER`, not hipcc. My build was falling back to `/usr/bin/hipcc` (Fedora's default when the `hipcc` package is installed), which injects `-x hip` onto every TU including host-only ones. That's why the `#error` tripped. Rebuilding with `-DCMAKE_CXX_COMPILER=/usr/lib64/rocm/llvm/bin/clang++` and the original `#error` restored, the full MIGraphX build completes cleanly. Patch 5 was a user-side build-config error, not a MIGraphX bug. The canonical set is now 7 patches. Details and compile-commands evidence on [ROCm/AMDMIGraphX#4799](https://github.com/ROCm/AMDMIGraphX/issues/4799) (closed). The body of the post below still uses the "8 patches" framing because that's the journey it describes.
 
-I wanted speaker diarization on my AMD GPU. The production pipelines said "CUDA required." A few weeks later, mine doesn't. The result is **Witness**: sub-7% strict DER on VoxConverse DEV (6.84%), 10.65% on TEST, 15x realtime. On a $550 consumer AMD card that officially isn't supported by anything.
+I wanted speaker diarization on my AMD GPU. The production pipelines said "CUDA required." A few weeks later, mine doesn't. The result is **Witness**: sub-7% strict DER on VoxConverse DEV (6.84%), 10.76% on TEST, 20x realtime. On a $550 consumer AMD card that officially isn't supported by anything.
 
 ---
 
 ## TL;DR
 
 - **ONNX Runtime 1.24.2 + MIGraphX** building and running on **RDNA 4 / gfx1201** on Fedora. The first public documentation I've come across.
-- **Witness**, the first documented working speaker-diarization pipeline on AMD RDNA 4 (gfx1201). Every pyannote/WhisperX ROCm setup I found targets RDNA 3 (gfx1100) or older. On VoxConverse TEST (232 files, 43.5h): **10.65% strict / 7.85% paper / 6.90% lenient DER**. DEV (216 files, 20.3h): **6.84% / 4.64% / 3.61%**. Lowest open-source numbers I've found, on both splits and every convention. Beats pyannote 3.1's 11.3% strict on TEST by 0.65pp, on a consumer AMD card that officially isn't supported by any ML stack. (Pyannote doesn't publish a DEV number; DEV is consistently the easier split across systems that score both, so Witness's 6.84% strict DEV isn't directly comparable to pyannote's TEST number.)
+- **Witness**, the first documented working speaker-diarization pipeline on AMD RDNA 4 (gfx1201). Every pyannote/WhisperX ROCm setup I found targets RDNA 3 (gfx1100) or older. On VoxConverse TEST (232 files, 43.5h): **10.76% strict / 7.96% paper / 7.01% lenient DER**. DEV (216 files, 20.3h): **6.84% / 4.64% / 3.61%**. Lowest open-source numbers I've found, on both splits and every convention. Beats pyannote 3.1's 11.3% strict on TEST by 0.54pp, on a consumer AMD card that officially isn't supported by any ML stack. (Pyannote doesn't publish a DEV number; DEV is consistently the easier split across systems that score both, so Witness's 6.84% strict DEV isn't directly comparable to pyannote's TEST number.)
 - A 3-minute phone call transcribed + diarized in **20 seconds** via parallel Whisper-on-Vulkan + diarization-on-MIGraphX. 36% faster than serial; long calls save up to 49.5%.
 - **Vulkan/RADV and ROCm/MIGraphX coexist on the same GPU** with negligible contention. Relevant if you do mixed-stack ML on AMD.
 
@@ -69,12 +69,12 @@ The patches aren't diarization-specific. Any ONNX model you could run on NVIDIA 
     <circle cx="263" cy="128" r="6" class="c-fg" fill="none" stroke-width="2"/>
     <text x="250" y="124" font-size="12" text-anchor="end" class="c-fg" stroke="none">pyannote 3.1 (RTX 4090, $1600)</text>
     <text x="250" y="138" font-size="10" text-anchor="end" class="c-muted" stroke="none">88.7% (11.3% DER), ~37x</text>
-    <circle cx="452" cy="257" r="9" class="c-accent" stroke="none"/>
-    <text x="465" y="255" font-size="13" font-weight="700" class="c-fg" stroke="none">Witness (RX 9070, $550)</text>
-    <text x="465" y="271" font-size="11" class="c-muted" stroke="none">89.35% (10.65% DER), 15.47x</text>
+    <circle cx="420" cy="232" r="9" class="c-accent" stroke="none"/>
+    <text x="433" y="230" font-size="13" font-weight="700" class="c-fg" stroke="none">Witness (RX 9070, $550)</text>
+    <text x="433" y="246" font-size="11" class="c-muted" stroke="none">89.24% (10.76% DER), 20.37x</text>
   </g>
 </svg>
-<figcaption style="font-size: 0.85em; color: var(--fg-muted, #6b6b6b); text-align: center; margin-top: 0.75em; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);">Consumer hardware, dollar-aware. Witness on AMD RX 9070 ($550, measured) vs pyannote 3.1 on NVIDIA RTX 4090 ($1600, 6-scenario avg from voiceping.net 2025). Speed edge: pyannote. Accuracy edge: Witness. Per-dollar speed edge: Witness (15.47x/$550 vs ~37x/$1600, about 22% more speed per dollar on AMD). No apples-to-apples cross-vendor benchmark exists; pyannote requires NVIDIA.</figcaption>
+<figcaption style="font-size: 0.85em; color: var(--fg-muted, #6b6b6b); text-align: center; margin-top: 0.75em; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);">Consumer hardware, dollar-aware. Witness on AMD RX 9070 ($550, measured) vs pyannote 3.1 on NVIDIA RTX 4090 ($1600, 6-scenario avg from voiceping.net 2025). Speed edge: pyannote. Accuracy edge: Witness. Per-dollar speed edge: Witness (20.37x/$550 vs ~37x/$1600, about 60% more speed per dollar on AMD). No apples-to-apples cross-vendor benchmark exists; pyannote requires NVIDIA.</figcaption>
 </figure>
 
 <figure style="margin: 2em 0;">
@@ -378,7 +378,7 @@ On a 16-minute real-world recording with two speakers, zero misattributions end-
 
 The reference numbers: `pyannote/community-1` reports **11.2% strict DER** on VoxConverse v0.3 (c=0, skip_overlap=False); pyannote 3.1 reports **11.3% strict**. Both are on the TEST set per the [speakrs crate documentation](https://crates.io/crates/speakrs), which serves as the authoritative interpretation since pyannote's HF cards don't explicitly state the split.
 
-Our numbers, on the same TEST set under identical strict scoring: **10.65%**, which is **-0.65pp below pyannote 3.1** and **-0.55pp below community-1**. Under the VoxConverse paper convention (c=0.25, skip_overlap=False): **7.85%**. Under lenient scoring (c=0.25, skip_overlap=True): **6.90%**.
+Our numbers, on the same TEST set under identical strict scoring: **10.76%**, which is **-0.54pp below pyannote 3.1** and **-0.44pp below community-1**. Under the VoxConverse paper convention (c=0.25, skip_overlap=False): **7.96%**. Under lenient scoring (c=0.25, skip_overlap=True): **7.01%**.
 
 On the DEV set (216 files, 20.3 hours), the same pipeline reaches **6.84% strict / 4.64% paper / 3.61% lenient**. The lenient DEV number is the directly-comparable one against FoxNose's reported 10.8% (same split, same convention): **-7.19pp below FoxNose**.
 
@@ -393,7 +393,7 @@ The charts up top gave the Pareto visual. Here's the full benchmark comparison, 
 | System | Split | Strict (c=0) | Paper (c=0.25) | Lenient (c=0.25, skip=T) | RT factor | Hardware | License |
 |---|---|---|---|---|---|---|---|
 | **Witness** (this work) | **DEV** (216) | **6.84%** | **4.64%** | **3.61%** | **13.63x** | AMD RX 9070 ($550) | MIT |
-| **Witness** (this work) | **TEST** (232, harder) | **10.65%** | **7.85%** | **6.90%** | **15.47x** | AMD RX 9070 ($550) | MIT |
+| **Witness** (this work) | **TEST** (232, harder) | **10.76%** | **7.96%** | **7.01%** | **20.37x** | AMD RX 9070 ($550) | MIT |
 | pyannote community-1 | TEST\* | 11.2% | - | - | ~37x | NVIDIA RTX 4090 ($1600) | MIT |
 | pyannote 3.1 | TEST\* | 11.3% | - | - | ~37x | NVIDIA RTX 4090 ($1600) | MIT |
 | WhisperX (inherits community-1) | TEST\* | ~11.2% | - | - | ~40x | NVIDIA RTX 4090 ($1600) | BSD |
@@ -401,11 +401,11 @@ The charts up top gave the Pareto visual. Here's the full benchmark comparison, 
 
 \* pyannote's HF cards don't explicitly state the VoxConverse split; per the [speakrs crate documentation](https://crates.io/crates/speakrs), the ~11.1-11.3% numbers are on the TEST set (232 files) under strict scoring, which we've adopted as the authoritative interpretation.
 
-**What the table is telling you:** the top two rows are Witness (this work), on both VoxConverse splits, under three standard DER conventions. Every cell is the lowest published open-source number for that convention-split pair. On DEV under FoxNose's exact convention (c=0.25, skip_overlap=True), we're 7.19pp below the previous open-source best. On TEST strict, we're 0.65pp below pyannote 3.1, the community's de facto reference implementation. The larger deltas on DEV are because DEV is the easier split for any pipeline; we included TEST separately so the harder benchmark doesn't get glossed over.
+**What the table is telling you:** the top two rows are Witness (this work), on both VoxConverse splits, under three standard DER conventions. Every cell is the lowest published open-source number for that convention-split pair. On DEV under FoxNose's exact convention (c=0.25, skip_overlap=True), we're 7.19pp below the previous open-source best. On TEST strict, we're 0.54pp below pyannote 3.1, the community's de facto reference implementation. The larger deltas on DEV are because DEV is the easier split for any pipeline; we included TEST separately so the harder benchmark doesn't get glossed over.
 
 **Caveats:** DER is a single scalar that hides structure (false-alarm vs missed-detection vs speaker-confusion mix differs across systems). Clustering pipelines differ. The 0.55-0.65pp TEST-set margin over pyannote is noise-adjacent; the DEV-set deltas and lenient-convention deltas are where this pipeline most visibly pulls ahead. Treat the table as concrete positioning, not a guarantee that this system will outperform pyannote on your audio - VoxConverse has its own distribution and your recordings will vary.
 
-**Speed across hardware.** Pyannote 3.1's realtime factor on RTX 4090 is ~23-56x across 6 test scenarios (RTF 0.018-0.043, average ~37x at RTF 0.027) per [voiceping.net December 2025](https://voiceping.net/en/blog/research-diarization-2025/); that ~37x is the figure cited in the chart and table. Witness runs 15.47x on consumer AMD RX 9070 ($550). On a per-dollar basis that's ~22% more speed per dollar on AMD than pyannote-on-RTX-4090; an apples-to-apples cross-vendor benchmark isn't possible today because pyannote needs NVIDIA. This post documents the first open-source ONNX diarization path on consumer AMD.
+**Speed across hardware.** Pyannote 3.1's realtime factor on RTX 4090 is ~23-56x across 6 test scenarios (RTF 0.018-0.043, average ~37x at RTF 0.027) per [voiceping.net December 2025](https://voiceping.net/en/blog/research-diarization-2025/); that ~37x is the figure cited in the chart and table. Witness runs 20.37x on consumer AMD RX 9070 ($550). On a per-dollar basis that's ~60% more speed per dollar on AMD than pyannote-on-RTX-4090; an apples-to-apples cross-vendor benchmark isn't possible today because pyannote needs NVIDIA. This post documents the first open-source ONNX diarization path on consumer AMD.
 
 
 ---
