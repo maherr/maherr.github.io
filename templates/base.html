@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ config.title }}{% endblock %}</title>
   <meta name="description" content="{% block description %}{{ config.description }}{% endblock %}">
+  <link rel="icon" type="image/svg+xml" href="{{ get_url(path='favicon.svg') | safe }}">
   <link rel="stylesheet" href="{{ get_url(path='style.css', cachebust=true) | safe }}">
   <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml', trailing_slash=false) | safe }}">
 </head>
