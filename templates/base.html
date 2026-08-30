@@ -5,6 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ config.title }}{% endblock %}</title>
   <meta name="description" content="{% block description %}{{ config.description }}{% endblock %}">
+  <script>
+    (() => {
+      const storageKey = "maherr-theme";
+      const explicitThemes = new Set(["light", "dark", "dracula"]);
+      let storedTheme = null;
+
+      try {
+        storedTheme = localStorage.getItem(storageKey);
+      } catch {
+        // A blocked storage area should still leave the system theme usable.
+      }
+
+      const initialTheme = explicitThemes.has(storedTheme) ? storedTheme : "system";
+
+      const applyTheme = (theme) => {
+        if (explicitThemes.has(theme)) {
+          document.documentElement.dataset.theme = theme;
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+        }
+      };
+
+      applyTheme(initialTheme);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const select = document.querySelector("#theme-select");
+        if (!select) return;
+
+        select.value = initialTheme;
+        select.addEventListener("change", () => {
+          const nextTheme = explicitThemes.has(select.value) ? select.value : "system";
+          applyTheme(nextTheme);
+
+          try {
+            if (nextTheme === "system") {
+              localStorage.removeItem(storageKey);
+            } else {
+              localStorage.setItem(storageKey, nextTheme);
+            }
+          } catch {
+            // The selection still repaints immediately when storage is unavailable.
+          }
+        });
+      });
+    })();
+  </script>
   <link rel="icon" type="image/svg+xml" href="{{ get_url(path='favicon.svg') | safe }}">
   <link rel="stylesheet" href="{{ get_url(path='style.css', cachebust=true) | safe }}">
   <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml', trailing_slash=false) | safe }}">
@@ -13,6 +59,15 @@
   <header class="site-header">
     <nav>
       <a href="{{ config.base_url | safe }}" class="site-title">{{ config.title }}</a>
+      <div class="theme-switcher">
+        <label for="theme-select">Theme</label>
+        <select id="theme-select" name="theme" autocomplete="off">
+          <option value="system">Auto (system)</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="dracula">Dracula Classic</option>
+        </select>
+      </div>
     </nav>
   </header>
   <main>

@@ -15,6 +15,14 @@
   --border-strong: #cfcfcf;
   --code-bg: #f6f6f6;
   --code-border: #e4e4e4;
+  --selection-bg: #0b5fff;
+  --selection-fg: #ffffff;
+  --focus: #0b5fff;
+  --chart-accent: #0b5fff;
+  --chart-fg: #1a1a1a;
+  --chart-muted: #6b6b6b;
+  --chart-border: #e4e4e4;
+  --chart-secondary: #1a1a1a;
 
   --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
@@ -37,7 +45,96 @@
     --border-strong: #3a3f48;
     --code-bg: #161a20;
     --code-border: #2a2e35;
+    --selection-bg: #7aa8ff;
+    --selection-fg: #0f1114;
+    --focus: #b3ccff;
+    --chart-accent: #7aa8ff;
+    --chart-fg: #eaeaea;
+    --chart-muted: #a8a8a8;
+    --chart-border: #2a2e35;
+    --chart-secondary: #eaeaea;
   }
+}
+
+// Explicit light and dark choices copy the original system branches exactly.
+// With no data-theme attribute, the rules above remain the startup default.
+html[data-theme="light"] {
+  --fg: #1a1a1a;
+  --fg-muted: #6b6b6b;
+  --fg-dim: #9a9a9a;
+  --bg: #fdfdfd;
+  --bg-subtle: #f4f4f4;
+  --accent: #0b5fff;
+  --accent-hover: #0044cc;
+  --border: #e4e4e4;
+  --border-strong: #cfcfcf;
+  --code-bg: #f6f6f6;
+  --code-border: #e4e4e4;
+  --selection-bg: #0b5fff;
+  --selection-fg: #ffffff;
+  --focus: #0b5fff;
+  --chart-accent: #0b5fff;
+  --chart-fg: #1a1a1a;
+  --chart-muted: #6b6b6b;
+  --chart-border: #e4e4e4;
+  --chart-secondary: #1a1a1a;
+}
+
+html[data-theme="dark"] {
+  --fg: #eaeaea;
+  --fg-muted: #a8a8a8;
+  --fg-dim: #777;
+  --bg: #0f1114;
+  --bg-subtle: #1a1d22;
+  --accent: #7aa8ff;
+  --accent-hover: #b3ccff;
+  --border: #2a2e35;
+  --border-strong: #3a3f48;
+  --code-bg: #161a20;
+  --code-border: #2a2e35;
+  --selection-bg: #7aa8ff;
+  --selection-fg: #0f1114;
+  --focus: #b3ccff;
+  --chart-accent: #7aa8ff;
+  --chart-fg: #eaeaea;
+  --chart-muted: #a8a8a8;
+  --chart-border: #2a2e35;
+  --chart-secondary: #eaeaea;
+}
+
+html[data-theme="dracula"] {
+  // Official Dracula Classic anchors, adapted into this site's semantic roles.
+  --dracula-background: #282a36;
+  --dracula-current-line: #44475a;
+  --dracula-foreground: #f8f8f2;
+  --dracula-comment: #6272a4;
+  --dracula-cyan: #8be9fd;
+  --dracula-green: #50fa7b;
+  --dracula-orange: #ffb86c;
+  --dracula-pink: #ff79c6;
+  --dracula-purple: #bd93f9;
+  --dracula-red: #ff5555;
+  --dracula-yellow: #f1fa8c;
+
+  --fg: var(--dracula-foreground);
+  --fg-muted: #b5b8c8;
+  --fg-dim: #9fa4b8;
+  --bg: var(--dracula-background);
+  --bg-subtle: var(--dracula-current-line);
+  --accent: var(--dracula-cyan);
+  --accent-hover: var(--dracula-pink);
+  --border: var(--dracula-current-line);
+  --border-strong: var(--dracula-comment);
+  --code-bg: var(--dracula-current-line);
+  --code-border: var(--dracula-comment);
+  --selection-bg: var(--dracula-orange);
+  --selection-fg: var(--dracula-background);
+  --focus: var(--dracula-yellow);
+  --chart-accent: var(--dracula-green);
+  --chart-fg: var(--dracula-foreground);
+  --chart-muted: #b5b8c8;
+  --chart-border: var(--dracula-current-line);
+  --chart-secondary: var(--dracula-purple);
 }
 
 // ============= reset + base =============
@@ -83,6 +180,7 @@ body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 1rem;
 }
 
 .site-title {
@@ -95,6 +193,49 @@ body {
 }
 
 .site-title:hover { color: var(--accent); }
+
+.theme-switcher {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  color: var(--fg-muted);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.theme-switcher select {
+  width: 10.5rem;
+  max-width: 45vw;
+  color: var(--fg);
+  background-color: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  font: inherit;
+  padding: 0.3em 1.65em 0.3em 0.5em;
+}
+
+.theme-switcher select:hover { border-color: var(--accent); }
+
+.theme-switcher select:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] .theme-switcher select { color-scheme: light; }
+html[data-theme="dark"] .theme-switcher select,
+html[data-theme="dracula"] .theme-switcher select { color-scheme: dark; }
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .theme-switcher select { color-scheme: dark; }
+}
+
+html[data-theme="light"] ::selection,
+html[data-theme="dark"] ::selection,
+html[data-theme="dracula"] ::selection {
+  color: var(--selection-fg);
+  background: var(--selection-bg);
+}
 
 main { margin-top: 0; margin-bottom: 4rem; }
 
@@ -329,4 +470,54 @@ tbody tr:hover {
   display: block;
   margin: 1.5em auto;
   border-radius: 4px;
+}
+
+// ============= embedded article graphics =============
+
+// The post's inline SVG styles preserve the system default. Explicit choices
+// override their semantic classes here so the charts repaint in place.
+html[data-theme] .post-content svg .c-accent {
+  fill: var(--chart-accent) !important;
+  stroke: var(--chart-accent) !important;
+}
+
+html[data-theme] .post-content svg .c-fg {
+  fill: var(--chart-fg) !important;
+  stroke: var(--chart-fg) !important;
+}
+
+html[data-theme] .post-content svg circle.c-fg {
+  fill: none !important;
+  stroke: var(--chart-secondary) !important;
+}
+
+html[data-theme] .post-content svg .c-muted {
+  fill: var(--chart-muted) !important;
+  stroke: var(--chart-muted) !important;
+}
+
+html[data-theme] .post-content svg text.c-fg,
+html[data-theme] .post-content svg text.c-muted {
+  stroke: none !important;
+}
+
+html[data-theme] .post-content svg .c-border {
+  fill: none !important;
+  stroke: var(--chart-border) !important;
+}
+
+@media (max-width: 34rem) {
+  .theme-switcher select { width: 9.5rem; }
+
+  .post-content table {
+    table-layout: fixed;
+  }
+
+  .post-content th,
+  .post-content td,
+  .post-content p code,
+  .post-content li code {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
 }
