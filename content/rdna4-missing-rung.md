@@ -4,6 +4,27 @@ date = 2026-04-17
 description = "6.84% / 10.76% strict DER on VoxConverse DEV / TEST at 20× realtime, running on a $550 AMD RX 9070 via 8 patches that unlock ONNX Runtime + MIGraphX on RDNA 4."
 +++
 
+> **Update, 2026-11-10.** Seven months later, three parts of this post are out of date. The body below is unchanged, and its numbers are April's.
+>
+> **On Fedora 44 with ROCm 7.1, I no longer need the patches.** I moved to Fedora 44 in May. Its packaged MIGraphX 7.1.1 replaces the source build that five of the patches existed for, and it has the two features the other two stubbed out, so ONNX Runtime 1.24.2 needs neither stub. I still build ORT myself, because Fedora packages 1.22.2. One new problem appeared: MIGraphX 7.1 rejects two broadcasted `Div` nodes in the WeSpeaker embedding model (`same_dims: div: Dimensions do not match`), and an explicit `Expand` in front of each fixes it. I have not published that model rewrite or a Fedora 44 build recipe yet, and I have not re-run VoxConverse on the new stack. Tested on my machine only.
+>
+> **Witness no longer transcribes with Whisper.** Diarization is the same: speakrs on MIGraphX. The text side moved to Cohere Transcribe in July, then to Parakeet Ultra in October, a GGUF model running through transcribe.cpp on Vulkan. Whisper now only decides whether a file is English or French. Word error rate measured through Witness on my RX 9070, lower is better:
+>
+> | Set | Ultra, plain | Ultra, diarized | Cohere, plain | Cohere, diarized |
+> |---|---:|---:|---:|---:|
+> | Earnings-21, 4 English calls, 128 min | **9.03%** | **9.42%** | 9.86% | 12.70% |
+> | CallFriend, 4 Quebec French phone channels, 119 min | **53.88%** | **56.27%** | 61.69% | 69.23% |
+>
+> That is eight recordings on one machine, and the French references are rough, so compare the two engines and ignore the absolute values. I did not score Whisper on these sets, so this is not a before and after against the pipeline in this post. Known flaw: on very short French turns, Parakeet Ultra sometimes writes English.
+>
+> **So the speed figures below describe April's pipeline.** "20x realtime" and "a 3-minute call in 20 seconds" were Whisper on Vulkan beside diarization on MIGraphX, on Fedora 43. The DER numbers measure diarization only, and I have not re-measured them on Fedora 44.
+>
+> The heap-corruption crash in Lesson 3 did get a root cause: teardown ordering in the ROCm runtime (rocclr), not MIGraphX. My fix, [ROCm/rocm-systems#5235](https://github.com/ROCm/rocm-systems/pull/5235), was auto-closed for inactivity before review.
+>
+> Witness also moved out of the patch repository today. It has its own, [maherr/witness](https://github.com/maherr/witness), installs on any Linux distribution without an AMD GPU (speaker labels then run on CPU), and transcribes with Parakeet Ultra only: the Cohere engine is gone.
+>
+> Current state of the patches lives in the [repo README](https://github.com/maherr/onnxruntime-migraphx-rdna4#readme).
+
 > **Update, 2026-04-20.** After this post shipped, @pfultz2 at AMD looked at my open issue on patch 5 (the `no_device.cpp` `#error`) and pointed out that MIGraphX expects `clang++` as `CMAKE_CXX_COMPILER`, not hipcc. My build was falling back to `/usr/bin/hipcc` (Fedora's default when the `hipcc` package is installed), which injects `-x hip` onto every TU including host-only ones. That's why the `#error` tripped. Rebuilding with `-DCMAKE_CXX_COMPILER=/usr/lib64/rocm/llvm/bin/clang++` and the original `#error` restored, the full MIGraphX build completes cleanly. Patch 5 was a user-side build-config error, not a MIGraphX bug. The canonical set is now 7 patches. Details and compile-commands evidence on [ROCm/AMDMIGraphX#4799](https://github.com/ROCm/AMDMIGraphX/issues/4799) (closed). The body of the post below still uses the "8 patches" framing because that's the journey it describes.
 
 I wanted speaker diarization on my AMD GPU. The production pipelines said "CUDA required." A few weeks later, mine doesn't. The result is **Witness**: sub-7% strict DER on VoxConverse DEV (6.84%), 10.76% on TEST, 20x realtime. On a $550 consumer AMD card that officially isn't supported by anything.
