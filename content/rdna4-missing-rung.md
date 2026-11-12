@@ -4,6 +4,8 @@ date = 2026-04-17
 description = "6.84% / 10.76% strict DER on VoxConverse DEV / TEST at 20× realtime, running on a $550 AMD RX 9070 via 8 patches that unlock ONNX Runtime + MIGraphX on RDNA 4."
 +++
 
+> **Update, 2026-11-11.** Witness now has [its own post](@/witness.md). It installs on any x86_64 Linux distribution and uses NVIDIA GPUs through CUDA as well as AMD ones.
+
 > **Update, 2026-11-10.** Seven months later, three parts of this post are out of date. The body below is unchanged, and its numbers are April's.
 >
 > **On Fedora 44 with ROCm 7.1, I no longer need the patches.** I moved to Fedora 44 in May. Its packaged MIGraphX 7.1.1 replaces the source build that five of the patches existed for, and it has the two features the other two stubbed out, so ONNX Runtime 1.24.2 needs neither stub. I still build ORT myself, because Fedora packages 1.22.2. One new problem appeared: MIGraphX 7.1 rejects two broadcasted `Div` nodes in the WeSpeaker embedding model (`same_dims: div: Dimensions do not match`), and an explicit `Expand` in front of each fixes it. I have not published that model rewrite or a Fedora 44 build recipe yet, and I have not re-run VoxConverse on the new stack. Tested on my machine only.

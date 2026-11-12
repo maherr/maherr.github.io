@@ -1,6 +1,6 @@
 # maherr.dev
 
-**Last updated:** 2026-08-29 22:06:43 -0400
+**Last updated:** 2026-11-11 19:22:01 -0500
 
 `maherr.dev` is a small Zola/GitHub Pages site for engineering notes. The
 published site is at [maherr.dev](https://maherr.dev). It has no server,
@@ -19,7 +19,7 @@ zola serve
 
 The preview binds to `127.0.0.1:1111` by default. Open
 `http://127.0.0.1:1111/` for the index or
-`http://127.0.0.1:1111/rdna4-missing-rung/` for the article. A production-like
+`http://127.0.0.1:1111/rdna4-missing-rung/` and `http://127.0.0.1:1111/witness/` for the articles. A production-like
 static build is generated with:
 
 ```sh
@@ -60,6 +60,7 @@ file states otherwise.
 | --- | --- | --- | --- |
 | Post index | `content/_index.md`, `/` | Lists published posts in date order. | This README, [index route](https://maherr.dev/) |
 | Engineering article | `content/rdna4-missing-rung.md`, `/rdna4-missing-rung/` | Renders the Witness article, tables, code, and labelled SVG charts. | This README, [article route](https://maherr.dev/rdna4-missing-rung/) |
+| Engineering article | `content/witness.md`, `/witness/` | Renders the Witness introduction: install, GPU matrix, speed and accuracy tables. | This README, [article route](https://maherr.dev/witness/) |
 | Theme control | `templates/base.html`, `#theme-select` | Applies Auto, Light, Dark, or Dracula Classic in place. | "Use the site" above |
 | Theme persistence | `templates/base.html`, `maherr-theme` | Stores only explicit theme choices; stale values fail open to system mode. | "Use the site" above |
 | Semantic theme tokens | `sass/style.scss` | Paints text, links, code, borders, selection, focus, controls, and article SVG classes. | `sass/style.scss` |
